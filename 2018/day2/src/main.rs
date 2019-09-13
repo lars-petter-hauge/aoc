@@ -2,6 +2,8 @@
 use std::io::prelude::*;
 use std::path::Path;
 use std::collections::HashMap;
+extern crate itertools;
+use itertools::Itertools;
 
 fn load_from_file(filename: impl AsRef<Path>)-> Vec<String>
 {
@@ -32,8 +34,31 @@ fn check_sum(vector: Vec<String>)-> i32{
     twice * thrice
 }
 
+fn similarity(xs: &String, ys: &String) -> String{
+    let mut similarity = String::new();
+    for (x, y) in xs.chars().zip(ys.chars()){
+        if x == y {
+            similarity.push(x)
+        }
+    }
+    similarity.to_string()
+}
+
+fn check_similarity(vector: Vec<String>)-> String{
+    let mut similar = String::new();
+    let mut most_similar = String::new();
+    for (a, b) in vector.iter().tuple_combinations(){
+        similar = similarity(&a, &b);
+        if similar.len() > most_similar.len(){
+            most_similar = similar;
+        }
+    }
+    most_similar.to_string()
+}
+
 fn main() {
     println!("{}", check_sum(load_from_file("input.txt")));
+    println!("{}", check_similarity(load_from_file("input.txt")));
 }
 
 #[cfg(test)]
@@ -51,7 +76,29 @@ mod tests {
                               "ababab"]
                              .iter()
                              .map(|&s| s.into())
-                             .collect()), 
+                             .collect()),
                              12);
+    }
+
+    #[test]
+    fn test_similarity(){
+        assert_eq!(similarity(&"equalweirdotheragain".to_string(),
+                              &"equalsomethingeagain".to_string()),
+                              "equalagain");
+    }
+
+    #[test]
+    fn test_check_similarity(){
+        assert_eq!(check_similarity(["abcde",
+                                     "fghij",
+                                     "klmno",
+                                     "pqrst",
+                                     "fguij",
+                                     "axcye",
+                                     "wvxyz"]
+                                     .iter()
+                                     .map(|&s| s.into())
+                                     .collect()),
+                                     "fgij");
     }
 }
