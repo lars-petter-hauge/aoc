@@ -24,7 +24,9 @@ dir_map = {
 def create_line(start, grid, directions, value):
     stop = copy.copy(start)
     i, j = stop
+    distance_point = {}
 
+    total_distance = 0
     for direction, distance in directions:
         for _ in range(distance):
             i += dir_map[direction][0]
@@ -38,6 +40,10 @@ def create_line(start, grid, directions, value):
                 grid[i][j] = -1
             else:
                 raise NotImplementedError
+            total_distance += 1
+            if (i,j) not in distance_point:
+                distance_point[(i,j)] = total_distance
+    return distance_point
 
 
 def run(fname):
@@ -46,18 +52,27 @@ def run(fname):
     mid = int(size/2)
 
     grid = np.zeros((size, size))
-
+    distances = []
     for idx, directions in enumerate(parse_input(data)):
-        create_line([mid, mid], grid, directions, idx+1)
+        distance = create_line([mid, mid], grid, directions, idx+1)
+        distances.append(distance)
+
+    intersections = set(distances[0].keys()).intersection(set(distances[1].keys()))
+    path = 100000
+    for intersection in intersections:
+        path = min(path, distances[0][intersection] + distances[1][intersection])
+
     i_indexes, j_indexes = np.where(grid == -1)
     dist = 100000
 
     for i, j in zip(i_indexes, j_indexes):
         dist = min(dist, (abs(mid-i) + abs(mid-j)))
+        assert (i,j) in intersections
 
-    return dist
-
+    return dist, path
 
 
 if __name__ == '__main__':
-    print(run("input.txt"))
+    dist, pathlength = run("input.txt")
+    print("distance: {}, length: {}".format(dist, pathlength))
+    # 14740 too low
