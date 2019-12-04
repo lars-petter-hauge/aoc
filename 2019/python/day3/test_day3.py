@@ -4,7 +4,7 @@ import unittest
 
 class Test(unittest.TestCase):
     def test_run(self):
-        dist,_ = run("day3/example1.txt")
+        dist, _ = run("day3/example1.txt")
         self.assertEqual(6, dist)
 
         dist, path = run("day3/example2.txt")
