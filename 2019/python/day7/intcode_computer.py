@@ -123,52 +123,46 @@ step_length = {
     8: 3,
 }
 
-def run(intcodes, values=None):
-    i = 0
-    if values is None:
-        raise NotImplementedError
+def run(intcodes, value, pos=0):
 
-    if not isinstance(values, list):
-        values = [values, values]
-
-    first, second = values
-    value = first
-    while intcodes[i] != 99:
-        _, b, c, op = parse_opcode(intcodes[i])
+    completed = True
+    while intcodes[pos] != 99:
+        _, b, c, op = parse_opcode(intcodes[pos])
         #print("code: {}, Performing operation: {}, mode: {}, mode: {}".format(intcodes[i], operations[op].__name__, mode[c].__name__, mode[b].__name__))
-        i += 1
-        output = operations[op](intcodes, i, mode[c], mode[b], value)
-        if op == 3:
-            value = second
+        pos += 1
+        output = operations[op](intcodes, pos, mode[c], mode[b], value)
         if op == 4:
             value = output
         if op in [5, 6] and output is not None:
-            i = output
+            pos = output
         else:
-            i += step_length[op]
+            pos += step_length[op]
+        if op == 3:
+            completed = False
+            break
 
-    return value
+    return intcodes, value, pos, completed
 
 def run_tests():
 
     for value in range(-10,10):
         # Positional mode
-        assert (value == 8) == run([3,9,8,9,10,9,4,9,99,-1,8], values=value)
-        assert (value < 8) == run([3,9,7,9,10,9,4,9,99,-1,8], values=value)
+        assert (value == 8) == run([3,9,8,9,10,9,4,9,99,-1,8], values=value)[1]
+        assert (value < 8) == run([3,9,7,9,10,9,4,9,99,-1,8], values=value)[1]
 
         # Immediate mode
-        assert (value == 8) == run([3,3,1108,-1,8,3,4,3,99], values=value)
-        assert (value < 8) == run([3,3,1107,-1,8,3,4,3,99], values=value)
+        assert (value == 8) == run([3,3,1108,-1,8,3,4,3,99], values=value)[1]
+        assert (value < 8) == run([3,3,1107,-1,8,3,4,3,99], values=value)[1]
 
         # Jump mode
-        assert (value != 0) == run([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], values=value)
-        assert (value != 0) == run([3,3,1105,-1,9,1101,0,0,12,4,12,99,1], values=value)
+        assert (value != 0) == run([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], values=value)[1]
+        assert (value != 0) == run([3,3,1105,-1,9,1101,0,0,12,4,12,99,1], values=value)[1]
 
         # Larger example
         program = [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
                    1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
                    999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
-        output = run(program, values=value)
+        output = run(program, values=value)[1]
 
         if value < 8:
             assert output == 999
