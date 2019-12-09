@@ -7,46 +7,46 @@ def parse_input(fname):
     return [int(x) for x in data[0].split(",")]
 
 
-def add(intcodes, i, read_a_method, read_b_method, value=None):
-    a, b, c = intcodes[i:i+3]
+def add(intcodes, pos, read_a_method, read_b_method, value=None):
+    a, b, c = intcodes[pos:pos+3]
     value = read_a_method(intcodes, a) + read_b_method(intcodes, b)
     intcodes[c] = value
 
 
-def multiply(intcodes, i, read_a_method, read_b_method, value=None):
-    a, b, c = intcodes[i:i+3]
+def multiply(intcodes, pos, read_a_method, read_b_method, value=None):
+    a, b, c = intcodes[pos:pos+3]
     value = read_a_method(intcodes, a) * read_b_method(intcodes, b)
     intcodes[c] = value
 
 
-def save(intcodes, i, read_a_method, read_b_method, value=None):
-    pos = intcodes[i]
+def save(intcodes, pos, read_a_method, read_b_method, value=None):
+    pos = intcodes[pos]
     intcodes[pos] = value
 
 
-def output(intcodes, i, read_a_method, read_b_method, value=None):
-    pos = read_a_method(intcodes, i)
+def output(intcodes, pos, read_a_method, read_b_method, value=None):
+    pos = read_a_method(intcodes, pos)
     return intcodes[pos]
 
 
-def jump_if_true(intcodes, i, read_a_method, read_b_method, value=None):
-    a, b, c = intcodes[i:i+3]
+def jump_if_true(intcodes, pos, read_a_method, read_b_method, value=None):
+    a, b = intcodes[pos:pos+2]
     a = read_a_method(intcodes, a)
     b = read_b_method(intcodes, b)
     if a:
         return b
 
 
-def jump_if_false(intcodes, i, read_a_method, read_b_method, value=None):
-    a, b, c = intcodes[i:i+3]
+def jump_if_false(intcodes, pos, read_a_method, read_b_method, value=None):
+    a, b = intcodes[pos:pos+2]
     a = read_a_method(intcodes, a)
     b = read_b_method(intcodes, b)
     if not a:
         return b
 
 
-def less_than(intcodes, i, read_a_method, read_b_method, value=None):
-    a, b, c = intcodes[i:i+3]
+def less_than(intcodes, pos, read_a_method, read_b_method, value=None):
+    a, b, c = intcodes[pos:pos+3]
     a = read_a_method(intcodes, a)
     b = read_b_method(intcodes, b)
     if a<b:
@@ -55,8 +55,8 @@ def less_than(intcodes, i, read_a_method, read_b_method, value=None):
         intcodes[c] = 0
 
 
-def equals(intcodes, i, read_a_method, read_b_method, value=None):
-    a, b, c = intcodes[i:i+3]
+def equals(intcodes, pos, read_a_method, read_b_method, value=None):
+    a, b, c = intcodes[pos:pos+3]
     a = read_a_method(intcodes, a)
     b = read_b_method(intcodes, b)
     if a==b:
@@ -65,12 +65,12 @@ def equals(intcodes, i, read_a_method, read_b_method, value=None):
         intcodes[c] = 0
 
 
-def from_position(intcodes, i):
-    return intcodes[i]
+def from_position(intcodes, pos):
+    return intcodes[pos]
 
 
-def from_memory(intcodes, i):
-    return i
+def from_memory(intcodes, pos):
+    return pos
 
 
 def parse_opcode(code):
@@ -124,19 +124,21 @@ step_length = {
 }
 
 def run(intcodes, value=1):
-    i = 0
-    while intcodes[i] != 99:
-        _, b, c, op = parse_opcode(intcodes[i])
+    pos = 0
+    while intcodes[pos] != 99:
+        _, b, c, op = parse_opcode(intcodes[pos])
         #print("code: {}, Performing operation: {}, mode: {}, mode: {}".format(intcodes[i], operations[op].__name__, mode[c].__name__, mode[b].__name__))
-        i += 1
-        output = operations[op](intcodes, i, mode[c], mode[b], value)
+        pos += 1
+        output = operations[op](intcodes, pos, mode[c], mode[b], value)
 
         if op == 4:
             value = output
+
+        # Set if jumper changes value
         if op in [5, 6] and output is not None:
-            i = output
+            pos = output
         else:
-            i += step_length[op]
+            pos += step_length[op]
 
     return intcodes, value
 
@@ -171,11 +173,11 @@ def run_tests():
             assert output == 1001
 
     original_data = parse_input("day5/input.txt")
-    intcodes, value = run(original_data)
+    _, value = run(original_data)
     assert value == 13210611
 
     original_data = parse_input("day5/input.txt")
-    intcodes, value = run(original_data, value=5)
+    _, value = run(original_data, value=5)
     assert value == 584126
 
 if __name__ == '__main__':
