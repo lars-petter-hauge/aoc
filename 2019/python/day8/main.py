@@ -2,30 +2,34 @@ from collections import Counter
 from itertools import chain
 import matplotlib.pyplot as plt
 
+
 def load_input(fname):
     with open(fname) as f:
         lines = f.readlines()
     return [int(c) for c in lines[0]]
 
+
 def count_values(img_data, num_pixels):
     pos = 0
     layers = []
-    
-    while pos+num_pixels <= len(img_data):
+
+    while pos + num_pixels <= len(img_data):
         count = Counter()
         for i in range(num_pixels):
-            count.update([img_data[pos+i]])
+            count.update([img_data[pos + i]])
         pos += num_pixels
         layers.append(count)
     return layers
 
+
 def part_1(img_data):
-    layers = count_values(img_data, 25*6)
+    layers = count_values(img_data, 25 * 6)
     minimum_layer = layers[0]
     for layer in layers[1:]:
-        if layer[0]<minimum_layer[0]:
+        if layer[0] < minimum_layer[0]:
             minimum_layer = layer
-    print(minimum_layer[1]*minimum_layer[2])
+    print(minimum_layer[1] * minimum_layer[2])
+
 
 def pixel_value(pixel, img_data, pixel_size):
     values = []
@@ -36,22 +40,25 @@ def pixel_value(pixel, img_data, pixel_size):
         pixel += pixel_size
     raise ValueError
 
+
 def pos2ij(pos, width):
-    row = pos//width
+    row = pos // width
     col = pos - width * row
     return col, row
 
+
 def translate_image(img_data, width, height):
-    img = [[2]*width for _ in range(height)]
+    img = [[2] * width for _ in range(height)]
 
     for pos in range(width * height):
         i, j = pos2ij(pos, width)
-        img[j][i] = pixel_value(pos, img_data, width*height)
+        img[j][i] = pixel_value(pos, img_data, width * height)
 
     return img
 
+
 def run():
-    img_data = load_input('day8/input.txt')
+    img_data = load_input("day8/input.txt")
     part_1(img_data)
     img_data = translate_image(img_data, 25, 6)
     fig = plt.figure()
@@ -60,9 +67,9 @@ def run():
 
 
 def run_tests():
-    img_data = [int(c) for c in '123456789012']
-    layers = count_values(img_data, 3*2)
-    img_data = translate_image([int(c) for c in '0222112222120000'], 2, 2)
+    img_data = [int(c) for c in "123456789012"]
+    layers = count_values(img_data, 3 * 2)
+    img_data = translate_image([int(c) for c in "0222112222120000"], 2, 2)
 
     layer1 = "22022222"
     layer2 = "12122222"
@@ -95,6 +102,7 @@ def run_tests():
     # 2012
     # 0002
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run_tests()
     run()

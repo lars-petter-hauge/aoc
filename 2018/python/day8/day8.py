@@ -1,13 +1,16 @@
 import unittest
- 
+
+
 def parse_data(data):
     data = [int(i) for i in data[0].split()]
     return data
 
+
 def read_input(fname):
     with open(fname) as f:
-        data=f.readlines()
+        data = f.readlines()
     return data
+
 
 def evaluate_node(data):
     children = data[0]
@@ -25,6 +28,7 @@ def evaluate_node(data):
 
     return offset, value
 
+
 def evaluate_node_part2(data):
     children = data[0]
     metadata = data[1]
@@ -36,21 +40,22 @@ def evaluate_node_part2(data):
         offset += skips
         values.append(val)
 
-   # if data == [2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2]:
+    # if data == [2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2]:
     #    import pdb; pdb.set_trace()
     for meta in range(metadata):
         if children == 0:
             value += data[offset]
         else:
             idx = data[offset] - 1
-            if idx<len(values):
+            if idx < len(values):
                 value += values[idx]
         offset += 1
     return offset, value
 
+
 class Test(unittest.TestCase):
     def test(self):
-        sequence = '2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2'
+        sequence = "2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2"
         sequence = [int(s) for s in sequence.split()]
 
         offset, value = evaluate_node(sequence)
@@ -61,11 +66,12 @@ class Test(unittest.TestCase):
         print("offset: {}, value: {}".format(offset, value))
         assert value == 66
 
-if __name__ == '__main__':
-    #unittest.main()
-    data = read_input('day8input')
+
+if __name__ == "__main__":
+    # unittest.main()
+    data = read_input("day8input")
     parsed = parse_data(data)
     offset, value = evaluate_node_part2(parsed)
     print("Value: {}".format(value))
 
-    #main(data)
+    # main(data)

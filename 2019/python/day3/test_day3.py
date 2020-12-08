@@ -2,6 +2,7 @@ from day3.main import run
 
 import unittest
 
+
 class Test(unittest.TestCase):
     def test_run(self):
         dist, _ = run("day3/example1.txt")

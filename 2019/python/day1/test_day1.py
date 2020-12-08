@@ -4,7 +4,6 @@ import unittest
 from day1 import main, calc_fuel_amount, calc_fuel_amount_recursive
 
 
-
 class TestDay1(unittest.TestCase):
     def test_main(self):
         pass
@@ -19,6 +18,7 @@ class TestDay1(unittest.TestCase):
         self.assertEqual(2, calc_fuel_amount_recursive(14))
         self.assertEqual(966, calc_fuel_amount_recursive(1969))
         self.assertEqual(50346, calc_fuel_amount_recursive(100756))
+
 
 if __name__ == "__main__":
     unittest.main()

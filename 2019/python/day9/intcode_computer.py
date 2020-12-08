@@ -1,10 +1,12 @@
 import copy
 import itertools
 
+
 def parse_input(fname):
     with open(fname) as f:
         data = f.readlines()
     return ExpandingList([int(x) for x in data[0].split(",")])
+
 
 class ExpandingList(list):
     def __setitem__(self, index, value):
@@ -25,6 +27,7 @@ class ExpandingList(list):
                 raise IndexError
 
         return list.__getitem__(self, index)
+
 
 class IntCodeComputer:
     def __init__(self, program, phase_setting=None, yield_at_output=False):
@@ -70,30 +73,30 @@ class IntCodeComputer:
         if not self.phase_set:
             self.value = self.phase_setting
         else:
-            self.value = input_signal            
+            self.value = input_signal
 
         while self.program[self.pos] != 99:
             self.update_mode()
             self.operation()
 
-            if self.operation.__name__ == 'save':
+            if self.operation.__name__ == "save":
                 if not self.phase_set:
                     self.value = input_signal
                     self.phase_set = True
 
-            if self.operation.__name__ == 'output':
+            if self.operation.__name__ == "output":
                 if self.yield_at_output:
                     self.completed = False
                     break
 
     def add(self):
-        a, b, c = self.program[self.pos:self.pos+3]
+        a, b, c = self.program[self.pos : self.pos + 3]
         value = self.read_first_method(a) + self.read_second_method(b)
         self.set_value_method(pos=c, value=value)
         self.pos += 3
 
     def multiply(self):
-        a, b, c = self.program[self.pos:self.pos+3]
+        a, b, c = self.program[self.pos : self.pos + 3]
         value = self.read_first_method(a) * self.read_second_method(b)
         self.set_value_method(pos=c, value=value)
         self.pos += 3
@@ -111,7 +114,7 @@ class IntCodeComputer:
         self.pos += 1
 
     def jump_if_true(self):
-        a, b, c = self.program[self.pos:self.pos+3]
+        a, b, c = self.program[self.pos : self.pos + 3]
         a = self.read_first_method(a)
         b = self.read_second_method(b)
         if a:
@@ -120,7 +123,7 @@ class IntCodeComputer:
             self.pos += 2
 
     def jump_if_false(self):
-        a, b, c = self.program[self.pos:self.pos+3]
+        a, b, c = self.program[self.pos : self.pos + 3]
         a = self.read_first_method(a)
         b = self.read_second_method(b)
         if not a:
@@ -129,7 +132,7 @@ class IntCodeComputer:
             self.pos += 2
 
     def less_than(self):
-        a, b, c = self.program[self.pos:self.pos+3]
+        a, b, c = self.program[self.pos : self.pos + 3]
         a = self.read_first_method(a)
         b = self.read_second_method(b)
         if a < b:
@@ -140,7 +143,7 @@ class IntCodeComputer:
         self.pos += 3
 
     def equals(self):
-        a, b, c = self.program[self.pos:self.pos+3]
+        a, b, c = self.program[self.pos : self.pos + 3]
         a = self.read_first_method(a)
         b = self.read_second_method(b)
         if a == b:
@@ -204,31 +207,94 @@ class IntCodeComputer:
         self.operation = self.operations[op]
         self.pos += 1
 
+
 def run(intcodes, input_signal=0, phase_setting=None, pos=0, yield_at_output=False):
-    computer = IntCodeComputer(intcodes, phase_setting=phase_setting, yield_at_output=yield_at_output)
+    computer = IntCodeComputer(
+        intcodes, phase_setting=phase_setting, yield_at_output=yield_at_output
+    )
     computer.run(input_signal)
 
     return computer.program, computer.value, computer.pos, computer.completed
 
+
 def run_tests():
 
-    for input_signal in range(-10,10):
+    for input_signal in range(-10, 10):
         # Positional mode
-        assert (input_signal == 8) == run([3,9,8,9,10,9,4,9,99,-1,8], input_signal=input_signal)[1]
-        assert (input_signal < 8) == run([3,9,7,9,10,9,4,9,99,-1,8], input_signal=input_signal)[1]
+        assert (input_signal == 8) == run(
+            [3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8], input_signal=input_signal
+        )[1]
+        assert (input_signal < 8) == run(
+            [3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8], input_signal=input_signal
+        )[1]
 
         # Immediate mode
-        assert (input_signal == 8) == run([3,3,1108,-1,8,3,4,3,99], input_signal=input_signal)[1]
-        assert (input_signal < 8) == run([3,3,1107,-1,8,3,4,3,99], input_signal=input_signal)[1]
+        assert (input_signal == 8) == run(
+            [3, 3, 1108, -1, 8, 3, 4, 3, 99], input_signal=input_signal
+        )[1]
+        assert (input_signal < 8) == run(
+            [3, 3, 1107, -1, 8, 3, 4, 3, 99], input_signal=input_signal
+        )[1]
 
         # Jump mode
-        assert (input_signal != 0) == run([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], input_signal=input_signal)[1]
-        assert (input_signal != 0) == run([3,3,1105,-1,9,1101,0,0,12,4,12,99,1], input_signal=input_signal)[1]
+        assert (input_signal != 0) == run(
+            [3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9],
+            input_signal=input_signal,
+        )[1]
+        assert (input_signal != 0) == run(
+            [3, 3, 1105, -1, 9, 1101, 0, 0, 12, 4, 12, 99, 1], input_signal=input_signal
+        )[1]
 
         # Larger example
-        program = [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
-                   1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
-                   999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
+        program = [
+            3,
+            21,
+            1008,
+            21,
+            8,
+            20,
+            1005,
+            20,
+            22,
+            107,
+            8,
+            21,
+            20,
+            1006,
+            20,
+            31,
+            1106,
+            0,
+            36,
+            98,
+            0,
+            0,
+            1002,
+            21,
+            125,
+            20,
+            4,
+            20,
+            1105,
+            1,
+            46,
+            104,
+            999,
+            1105,
+            1,
+            46,
+            1101,
+            1000,
+            1,
+            20,
+            4,
+            20,
+            1105,
+            1,
+            46,
+            98,
+            99,
+        ]
         output = run(program, input_signal=input_signal)[1]
 
         if input_signal < 8:
@@ -246,5 +312,6 @@ def run_tests():
     input_signal = run(original_data, input_signal=5)[1]
     assert input_signal == 584126
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run_tests()

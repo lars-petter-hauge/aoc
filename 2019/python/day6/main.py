@@ -1,10 +1,11 @@
-
 from collections import defaultdict, deque
+
 
 def load_input(fname):
     with open(fname) as f:
         lines = f.readlines()
     return [l.strip() for l in lines]
+
 
 def create_tree(data):
     orbit_tree = defaultdict(list)
@@ -13,7 +14,8 @@ def create_tree(data):
         orbit_tree[a].append(b)
     return orbit_tree
 
-def count_orbits(tree, base='COM'):
+
+def count_orbits(tree, base="COM"):
     queue = deque()
     queue.append(base)
 
@@ -28,7 +30,8 @@ def count_orbits(tree, base='COM'):
 
     return sum(level.values())
 
-def minimum_distance(tree, start='YOU', stop='SAN'):
+
+def minimum_distance(tree, start="YOU", stop="SAN"):
     queue = deque()
     queue.append(start)
 
@@ -47,6 +50,7 @@ def minimum_distance(tree, start='YOU', stop='SAN'):
         queue.extend(neighbours)
     return None
 
+
 def run_tests():
     orbit_map = [
         "COM)B",
@@ -59,7 +63,8 @@ def run_tests():
         "D)I",
         "E)J",
         "J)K",
-        "K)L",]
+        "K)L",
+    ]
     tree = create_tree(orbit_map)
     assert 42 == count_orbits(tree)
 
@@ -75,7 +80,8 @@ def run_tests():
         "D)M",
         "E)J",
         "J)K",
-        "K)L",]
+        "K)L",
+    ]
     tree = create_tree(orbit_map)
     assert 46 == count_orbits(tree)
 
@@ -92,14 +98,21 @@ def run_tests():
         "J)K",
         "K)L",
         "K)YOU",
-        "I)SAN",]
+        "I)SAN",
+    ]
     tree = create_tree(orbit_map)
     assert 4 == minimum_distance(tree)
-    
+
+
 def run(data):
     tree = create_tree(data)
-    print("Number of orbits: {}. Orbital jumps required: {}".format(count_orbits(tree), minimum_distance(tree)))
+    print(
+        "Number of orbits: {}. Orbital jumps required: {}".format(
+            count_orbits(tree), minimum_distance(tree)
+        )
+    )
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     run_tests()
-    run(load_input('day6/input.txt'))
+    run(load_input("day6/input.txt"))
