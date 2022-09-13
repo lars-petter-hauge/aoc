@@ -87,49 +87,49 @@ class IntCodeComputer:
                     break
 
     def add(self):
-        a, b, c = self._memory[self._mem_pointer : self._mem_pointer + 3]
+        a, b, c = self._memory[self._mem_pointer + 1 : self._mem_pointer + 4]
         value = self.read_first_method(a) + self.read_second_method(b)
         self.set_value_method(pos=c, value=value)
-        self._mem_pointer += 3
+        self._mem_pointer += 4
 
     def multiply(self):
-        a, b, c = self._memory[self._mem_pointer : self._mem_pointer + 3]
+        a, b, c = self._memory[self._mem_pointer + 1 : self._mem_pointer + 4]
         value = self.read_first_method(a) * self.read_second_method(b)
         self.set_value_method(pos=c, value=value)
-        self._mem_pointer += 3
+        self._mem_pointer += 4
 
     def save(self):
-        pos = self.read_first_method(self._mem_pointer)
+        pos = self.read_first_method(self._mem_pointer + 1)
         self.set_value_method(pos=pos, value=self.value)
-        self._mem_pointer += 1
+        self._mem_pointer += 2
 
     def output(self):
-        pos = self.read_first_method(self._mem_pointer)
+        pos = self.read_first_method(self._mem_pointer + 1)
         self.value = self._memory[pos]
         if self.verbose:
             print("Output value: {}".format(self.value))
-        self._mem_pointer += 1
+        self._mem_pointer += 2
 
     def jump_if_true(self):
-        a, b, c = self._memory[self._mem_pointer : self._mem_pointer + 3]
+        a, b, c = self._memory[self._mem_pointer + 1 : self._mem_pointer + 4]
         a = self.read_first_method(a)
         b = self.read_second_method(b)
         if a:
             self._mem_pointer = b
         else:
-            self._mem_pointer += 2
+            self._mem_pointer += 3
 
     def jump_if_false(self):
-        a, b, c = self._memory[self._mem_pointer : self._mem_pointer + 3]
+        a, b, c = self._memory[self._mem_pointer + 1 : self._mem_pointer + 4]
         a = self.read_first_method(a)
         b = self.read_second_method(b)
         if not a:
             self._mem_pointer = b
         else:
-            self._mem_pointer += 2
+            self._mem_pointer += 3
 
     def less_than(self):
-        a, b, c = self._memory[self._mem_pointer : self._mem_pointer + 3]
+        a, b, c = self._memory[self._mem_pointer + 1 : self._mem_pointer + 4]
         a = self.read_first_method(a)
         b = self.read_second_method(b)
         if a < b:
@@ -137,10 +137,10 @@ class IntCodeComputer:
         else:
             value = 0
         self.set_value_method(pos=c, value=value)
-        self._mem_pointer += 3
+        self._mem_pointer += 4
 
     def equals(self):
-        a, b, c = self._memory[self._mem_pointer : self._mem_pointer + 3]
+        a, b, c = self._memory[self._mem_pointer + 1 : self._mem_pointer + 4]
         a = self.read_first_method(a)
         b = self.read_second_method(b)
         if a == b:
@@ -148,12 +148,12 @@ class IntCodeComputer:
         else:
             value = 0
         self.set_value_method(pos=c, value=value)
-        self._mem_pointer += 3
+        self._mem_pointer += 4
 
     def set_base(self):
-        pos = self.read_first_method(self._mem_pointer)
+        pos = self.read_first_method(self._mem_pointer + 1)
         self._internal_base += self._memory[pos]
-        self._mem_pointer += 1
+        self._mem_pointer += 2
 
     def from_position(self, pos):
         return self._memory[pos]
@@ -202,4 +202,3 @@ class IntCodeComputer:
             self.set_value_method = self.set_modes[c]
 
         self.operation = self.operations[op]
-        self._mem_pointer += 1
