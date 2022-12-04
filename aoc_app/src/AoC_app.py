@@ -2,12 +2,15 @@ import logging
 import os
 import sys
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Optional
 
 import click
 import requests
 import yaml
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
 
 logger = logging.getLogger("AoC")
 
@@ -54,12 +57,48 @@ class AocClient:
 
 @dataclass
 class SlackBotClient:
-    url: str
+    """Client that can post messages to a slack channel
+
+    User can provide a url specific to the channel given which must also contain a secret
+    The format is of T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX and will be prefixed with
+    https://hooks.slack.com/services/.
+
+    It is also possible to connect using a token and a channel, where their format are:
+    channel: C05002EAE
+    token: "xoxb-XXXXXXXX-XXXXXXXX-XXXXX",
+    """
+
+    channel: Optional[str] = None
+    token: Optional[str] = None
+    url: Optional[str] = None
+    _slack_client: WebClient = field(init=False)
+
+    def __post_init__(self):
+        if self.token is None and self.url is None:
+            raise ValueError("Must provide either token or url")
+        if self.token is not None and self.channel is None:
+            raise ValueError("Must provide channel id if token is used")
+        if self.token is not None and self.url is not None:
+            raise ValueError("Either provide token or url")
+
+        self._slack_client = None
+        if self.token:
+            self._slack_client = WebClient(self.token)
 
     def post(self, content):
-        response = requests.post(url=f"{SLACK_BASE_URL}/{self.url}", json=content)
-        response.raise_for_status()
-        logger.debug(f"Slack bot response: {response}")
+        if self._slack_client is not None:
+            try:
+                result = self._slack_client.chat_postMessage(
+                    channel=self.channel, attachments=[content], text=content["text"]
+                )
+                logger.debug(result)
+
+            except SlackApiError as e:
+                logger.error(f"Error posting message: {e}")
+        else:
+            response = requests.post(url=f"{SLACK_BASE_URL}/{self.url}", json=content)
+            response.raise_for_status()
+            logger.debug(f"Slack bot response: {response}")
 
 
 class LeaderBoard:
@@ -156,6 +195,15 @@ def setup_logger(verbosity):
     logger.setLevel(level)
 
 
+def retrieve_value(config, name, err_msg=None, exit_on_failure=False):
+    value = os.environ.get(name)
+    if value is None:
+        value = config.get(name)
+    if value is None and exit_on_failure:
+        sys.exit(err_msg)
+    return value
+
+
 @click.command()
 @click.option("--config_file", required=True, help="File path to config file")
 @click.option("--year", required=True, help="The year the leaderboard will be tracked")
@@ -173,29 +221,43 @@ def aoc_tracker(config_file, year, verbose):
     logger.info("Initiating Advent of Code Leaderboard Tracker")
     config = load_config(config_file)
 
-    session = os.environ.get("AOC_SESSION")
-    if session is None:
-        session = config.get("AOC_SESSION")
-    if session is None:
-        sys.exit(
-            "The AOC session must be provided. Please set AOC_SESSION either as environment variable, or in config file, and try again"
-        )
-
-    slack_bot_url = os.environ.get("SLACK_BOT_ENTRY")
-    if slack_bot_url is None:
-        slack_bot_url = config.get("SLACK_BOT_ENTRY")
-    if slack_bot_url is None:
-        sys.exit(
-            "The slack bot url must be provided. Please set SLACK_BOT_ENTRY either as environment variable, or in config file, and try again"
-        )
-
+    session = retrieve_value(
+        config,
+        "AOC_SESSION",
+        "The AOC session must be provided. Please set AOC_SESSION either as environment variable, or in config file, and try again",
+        exit_on_failure=True,
+    )
     aoc_client = AocClient(
         leaderboard=config["LEADER_BOARD"],
         session=session,
         year=year,
     )
 
-    slack_client = SlackBotClient(url=slack_bot_url)
+    slack_token = retrieve_value(
+        config,
+        "SLACK_TOKEN",
+    )
+    slack_channel_id = retrieve_value(
+        config,
+        "SLACK_CHANNEL",
+    )
+    slack_client = None
+    if slack_token is not None:
+        if slack_channel_id is None:
+            sys.exit(
+                "Slack token provided, but did not find channel. Please provide SLACK_CHANNEL in config or as an environment variable"
+            )
+        slack_client = SlackBotClient(token=slack_token, channel=slack_channel_id)
+    else:
+        logger.info("Slack token not provided, falling back on SLACK_BOT_ENTRY")
+        slack_bot_url = retrieve_value(
+            config,
+            "SLACK_BOT_ENTRY",
+            "The slack bot url must be provided. Please set SLACK_BOT_ENTRY either as environment variable, or in config file, and try again",
+            exit_on_failure=True,
+        )
+        slack_client = SlackBotClient(url=slack_bot_url)
+
     slack_client.post(
         {
             "text": " :christmas_tree: Hello, I am an Advent of Code leaderboard tracker - I'll be keeping you lot up to date :christmas_tree:",
