@@ -143,7 +143,7 @@ class LeaderBoard:
 
 def format_slack_message(content):
     timestamp, data = content
-    msg = f":christmas_tree: At {str(timestamp)}, *{data['name']}* gained his/her {'*first*' if data['star'] == '1' else '*second*'} :star: for day *{data['day']}* :christmas_tree:"
+    msg = f":christmas_tree: At {str(timestamp)}, *{data['name']}* gained {''.join([':star:']*int(data['star']))} for day *{data['day']}* :christmas_tree:"
     return {"text": msg}
 
 
