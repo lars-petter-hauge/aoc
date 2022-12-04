@@ -104,7 +104,7 @@ class LeaderBoard:
 
 def format_slack_message(content):
     timestamp, data = content
-    msg = f"At {str(timestamp)}, **{data['name']}** gained his/her {'**first**' if data['day'] == '1' else '**second**'} for day **{data['day']}**"
+    msg = f":christmas_tree: At {str(timestamp)}, *{data['name']}* gained his/her {'*first*' if data['star'] == '1' else '*second*'} :star: for day *{data['day']}* :christmas_tree:"
     return {"text": msg}
 
 
@@ -198,7 +198,8 @@ def aoc_tracker(config_file, year, verbose):
     slack_client = SlackBotClient(url=slack_bot_url)
     slack_client.post(
         {
-            "text": "Hello, I am an Advent of Code leaderboard tracker - I'll be keeping you lot up to date"
+            "text": " :christmas_tree: Hello, I am an Advent of Code leaderboard tracker - I'll be keeping you lot up to date :christmas_tree:",
+            "type": "mrkdwn",
         }
     )
 
