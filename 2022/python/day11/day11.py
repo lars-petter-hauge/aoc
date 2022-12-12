@@ -1,3 +1,4 @@
+import copy
 import math
 from collections import Counter
 from functools import partial
@@ -76,30 +77,54 @@ def parse(lines):
     return monkeys
 
 
-def throw_time(monkeys, rounds=1):
+def factorise(value, common_denominator):
+    if value < common_denominator:
+        return value
+    return value - (value // common_denominator) * common_denominator
+
+
+def throw_time(monkeys, rounds=1, relief_value=3):
     counter = Counter()
-    for _ in range(rounds):
+    common_denominator = math.prod(
+        [content["check"].keywords["b"] for _, content in monkeys.items()]
+    )
+    print_at_rounds = [1000 * i for i in range(1, 11)]
+    print_at_rounds.extend([1, 20])
+    for round in range(1, rounds + 1):
         for monkey, content in monkeys.items():
             while content["items"]:
                 item_level = content["items"].pop(0)
                 item_level = content["inspect"](item_level)
-                item_level = int(item_level / 3)  # int rounds down
+                item_level = int(item_level / relief_value)  # int rounds down
                 if content["check"](item_level):
                     receiver = content["cond_true"]
                 else:
                     receiver = content["cond_false"]
+                item_level = factorise(item_level, common_denominator)
                 monkeys[receiver]["items"].append(item_level)
                 counter.update([monkey])
+        if round in print_at_rounds:
+            print(f"After round {round}")
+            for monkey in monkeys.keys():
+                print(f"Monkey {monkey} inspected items {counter[monkey]} times")
+            print("\n")
     return counter
 
 
 lines = load_input("test_input.txt")
 monkeys = parse(lines)
-counter = throw_time(monkeys, rounds=20)
+
+counter = throw_time(copy.deepcopy(monkeys), rounds=20, relief_value=3)
 print(math.prod([val for m, val in counter.most_common()[:2]]))
 
+counter = throw_time(copy.deepcopy(monkeys), rounds=10000, relief_value=1)
+print(math.prod([val for m, val in counter.most_common()[:2]]))
 
 lines = load_input("input.txt")
 monkeys = parse(lines)
-counter = throw_time(monkeys, rounds=20)
+
+counter = throw_time(copy.deepcopy(monkeys), rounds=20, relief_value=3)
+print(math.prod([val for m, val in counter.most_common()[:2]]))
+
+counter = throw_time(copy.deepcopy(monkeys), rounds=10000, relief_value=1)
 print(math.prod([val for m, val in counter.most_common()[:2]]))
