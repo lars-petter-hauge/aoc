@@ -69,7 +69,7 @@ def bfs(graph, start, end):
             queue.append(sub_node)
             seen.add(sub_node)
 
-    raise KeyError("Did not find end")
+    raise KeyError(f"Tried to search from {start} to {end}, could not find path")
 
 
 def neighbours(i, j, grid):
@@ -121,7 +121,7 @@ def print_map(heightmap, path):
 heightmap = [[c for c in line] for line in TEST_INPUT.split("\n")]
 graph, start, end = create_graph(heightmap)
 path = bfs(graph, start, end)
-print(len(path))
+print(len(path) - 1)
 
 heightmap = [[c for c in line] for line in PUZZLE_INPUT.split("\n")]
 graph, start, end = create_graph(heightmap)
@@ -129,4 +129,25 @@ path = bfs(graph, start, end)
 
 # Produces correct length for example and other users input, but is off by 2 for
 # my input (i.e. off by 3 before removing start)
-print(len(path) - 1)  # Remove start
+print(len(path) - 1)
+
+# Not really many positions, so we'll just go ahead with the naive implementation
+# and try every a-position.
+a_positions = [
+    (i, j)
+    for i, j in itertools.product(range(len(heightmap)), range(len(heightmap[0])))
+    if heightmap[i][j] == "a"
+]
+best_guess = path
+for pos in a_positions:
+    try:
+        path = bfs(graph, pos, end)
+    except KeyError as e:
+        print(str(e))
+        continue
+    if len(path) < len(best_guess):
+        print(f"improved guess found from {pos}")
+        best_guess = path
+
+# Same issue as part 1, is off by 2 for some reason.
+print(len(best_guess) - 1)  # Remove start
