@@ -1,8 +1,8 @@
-from dataclasses import dataclass
-from typing import Callable
-from collections import deque
-from functools import partial
 import copy
+from collections import deque
+from dataclasses import dataclass
+from functools import partial
+from typing import Callable
 
 TEST_INPUT = """noop
 addx 3
@@ -50,7 +50,8 @@ def run(task, value):
 
 
 def render(cycle, value):
-    norm = cycle - (cycle // 41) * 41
+    pos = cycle-1 # CRT 0-indexed
+    norm = pos - (pos // 40) * 40
     if norm in range(value - 1, value + 2):
         return "#"
     return "."
@@ -77,13 +78,17 @@ def program(tasks):
 
     return results, pixels
 
+def chunkify(iterable, length):
+    for i in range(0, len(iterable), length):
+        yield iterable[i:i+length]
 
-# tasks = parse_lines(TEST_INPUT.split("\n"))
-# program(tasks)
 
 tasks = parse_lines(load_input("test_input.txt"))
-print(program(tasks))
+values, pixels=program(tasks)
+
+print("\n".join(["".join(content) for content in chunkify(pixels, 40)]))
 
 tasks = parse_lines(load_input("input.txt"))
 values, pixels = program(tasks)
-a = 2
+
+print("\n".join(["".join(content) for content in chunkify(pixels, 40)]))
