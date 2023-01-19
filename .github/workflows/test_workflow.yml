@@ -15,4 +15,4 @@ jobs:
       - name: if_not_release
         if: (!contains(${{ github.event.head_commit.message }}, 'Add release'))
         run: |
-          echo does not contain release
+          echo does not contain release and
