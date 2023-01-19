@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: on_release
-        if: (contains(${{ github.event.head_commit.message }}, 'Add release'))
+        if: contains(github.event.head_commit.message, 'Add release')
         run: |
           echo contains release
       - name: if_not_release
-        if: (!contains(${{ github.event.head_commit.message }}, 'Add release'))
+        if: (!contains(github.event.head_commit.message , 'Add release'))
         run: |
           echo does not contain release and
