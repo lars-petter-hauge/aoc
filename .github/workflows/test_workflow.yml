@@ -9,4 +9,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: hello world job
-        run: echo ${{ github.event.commits[0][message]}}
+        run: echo ${{ github.event.commits[0]}}
