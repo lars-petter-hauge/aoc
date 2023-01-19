@@ -8,5 +8,11 @@ jobs:
   echo_stuff:
     runs-on: ubuntu-latest
     steps:
-      - name: hello world job
-        run: echo ${{ github.event.head_commit.message }}
+      - name: on_release
+        if: (contains(${{ github.event.head_commit.message }}, 'Add release')
+        run: |
+          echo contains release
+      - name: if_not_release
+        if: (!contains(${{ github.event.head_commit.message }}, 'Add release')
+        run: |
+          echo does not contain release
