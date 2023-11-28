@@ -1,4 +1,7 @@
 import pathlib
+import string
+
+ALPHABET = list(string.ascii_lowercase)
 
 TEST_DATA = [
     "aaaaa-bbb-z-y-x-123[abxyz]",
@@ -31,6 +34,20 @@ def check_checksum(name, checksum):
     return check_sum_created == checksum
 
 
+def decrypt(name, shift):
+    indexes = [ALPHABET.index(char) if char != "-" else " " for char in name]
+    return "".join(
+        [
+            ALPHABET[(idx + shift) % len(ALPHABET)] if idx != " " else idx
+            for idx in indexes
+        ]
+    )
+
+
+def test_decrypt():
+    assert decrypt("qzmt-zixmtkozy-ivhz", 343) == "very encrypted name"
+
+
 def test_parse():
     assert parse_line(TEST_DATA[0]) == ("aaaaa-bbb-z-y-x", "123", "abxyz")
 
@@ -51,6 +68,14 @@ if __name__ == "__main__":
     input_path = pathlib.Path(__file__).parent / "input.txt"
     lines = load_content(input_path)
     rooms = [parse_line(line) for line in lines]
+    print(
+        "\n".join(
+            [
+                f"{room}: {decrypt(encryption, int(room))}"
+                for encryption, room, _ in rooms
+            ]
+        )
+    )
     print(
         sum(
             [
