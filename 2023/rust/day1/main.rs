@@ -1,9 +1,8 @@
 use std::path::Path;
 
-fn load_from_file(filename: impl AsRef<Path>) -> Vec<String> {
+fn load_from_file(filename: impl AsRef<Path>) -> String {
     let content = std::fs::read_to_string(filename).expect("unable to read file");
-    let vec: Vec<String> = content.split("\n").map(|s: &str| s.to_string()).collect();
-    vec
+    content
 }
 
 fn main() {
@@ -14,28 +13,17 @@ fn main() {
     //    .iter()
     //    .map(|line| line.chars().map(|c| c.to_digit(10)).collect())
     //    .collect();
-    let mut numbers: Vec<u32> = vec![];
-    let _iter = _lines.iter();
-    for val in _iter {
-        let char_iter = val.chars();
-        let mut temp_num: Vec<u32> = vec![];
-        for c in char_iter {
-            let dig = c.to_digit(10);
-            if !dig.is_none() {
-                temp_num.push(dig.unwrap());
+    let mut numbers= Vec::new();
+    for line in _lines.lines() {
+        let mut temp_num= Vec::new();
+        for c in line.chars() {
+            if c.is_numeric(){
+                temp_num.push(c);
             }
         }
-
-        if !temp_num.is_empty() {
-            let val = format!(
-                "{:?}{:?}",
-                temp_num.first().unwrap(),
-                temp_num.last().unwrap()
-            );
-            numbers.push(val.parse::<u32>().unwrap())
-        }
+        numbers.push((temp_num.first().unwrap().to_string()+&temp_num.last().unwrap().to_string()).parse::<i32>().unwrap())
     }
-    println!("sum: {:?}", numbers.iter().sum::<u32>());
+    println!("sum: {:?}", numbers.iter().sum::<i32>());
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
 }
