@@ -6,14 +6,46 @@ QQQJA 483"""
 
 TYPE_STRENGTH = ["HIGH", "PAIR", "TWO_PAIRS", "THREE", "HOUSE", "FOUR", "FIVE"]
 SINGLE_STRENGTH = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"]
+SINGLE_STRENGTH_WILDCARD = [
+    "J",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "T",
+    "Q",
+    "K",
+    "A",
+]
 from collections import Counter
 
 
 class Hand:
-    def __init__(self, cards):
+    def __init__(self, cards, use_wildcard=False):
         self._cards = cards
         self._counter = Counter(self._cards)
-        (_, primary), (_, secondary) = self._counter.most_common(2)
+        self._use_wildcard = use_wildcard
+        common = self._counter.most_common(2)
+        if len(common) == 2:
+            (primary_card, primary), (secondary_card, secondary) = common
+        else:
+            (primary_card, primary) = common[0]
+            secondary = None
+            secondary_card = None
+        if use_wildcard:
+            wild_card = self._counter.get("J")
+            if wild_card is not None:
+                if primary_card == "J" and secondary is not None:
+                    primary += secondary
+                    secondary = 0
+                elif secondary_card == "J":
+                    primary += secondary
+                else:
+                    primary += wild_card
         if primary == 5:
             self._type = "FIVE"
         elif primary == 4:
@@ -42,8 +74,12 @@ class Hand:
         strength, other_strength = 0, 0
         i = 0
         while strength == other_strength and i <= len(self._cards):
-            strength = SINGLE_STRENGTH.index(self._cards[i])
-            other_strength = SINGLE_STRENGTH.index(other._cards[i])
+            if self._use_wildcard:
+                strength_rating = SINGLE_STRENGTH_WILDCARD
+            else:
+                strength_rating = SINGLE_STRENGTH
+            strength = strength_rating.index(self._cards[i])
+            other_strength = strength_rating.index(other._cards[i])
             i += 1
 
         return strength < other_strength
@@ -60,19 +96,25 @@ def load_input(fname):
         return fh.readlines()
 
 
-def parse_lines(lines):
+def parse_lines(lines, wildcard=False):
     result = []
 
     for line in lines:
         cards, score = line.split()
-        result.append((Hand(cards), int(score)))
+        result.append((Hand(cards, wildcard), int(score)))
     return result
 
 
+# 248687135 too low
+
 hands = parse_lines(TEST_DATA.split("\n"))
+assert calc_score(hands) == 6440
+hands = parse_lines(TEST_DATA.split("\n"), wildcard=True)
+assert calc_score(hands) == 5905
 
-
-print(calc_score(hands))
 
 hands = parse_lines(load_input("input.txt"))
+assert calc_score(hands) == 250474325
+
+hands = parse_lines(load_input("input.txt"), wildcard=True)
 print(calc_score(hands))
